@@ -4,3 +4,9 @@ export enum GENDER {
   OTHER = 'OTHER',
   NONE = 'NONE',
 }
+
+export enum ROLE {
+  ADMIN = 'ADMIN',
+  TUTOR = 'TUTOR',
+  STUDENT = 'STUDENT',
+}

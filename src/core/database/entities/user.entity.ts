@@ -8,14 +8,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuid4 } from 'uuid';
-import { GENDER } from '../constant/user.constant';
+import { GENDER, ROLE } from '../constant/user.constant';
 
 @Entity({ name: 'user_profile' })
 export class UserEntity extends BaseEntity {
   @PrimaryColumn({ name: 'user_id', length: 36, type: 'varchar' })
   id: string;
 
-  @Column({ name: 'username', length: 100, type: 'varchar' })
+  @Column({ name: 'username', length: 20, type: 'varchar' })
   username: string;
 
   @Column({ name: 'mobile_no', length: 11, type: 'varchar', nullable: true })
@@ -24,7 +24,7 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true, length: 320, type: 'varchar' })
   email: string;
 
-  @Column({ name: 'password', length: 256, type: 'varchar', nullable: true })
+  @Column({ name: 'password', length: 256, type: 'varchar' })
   password: string;
 
   @Column({ name: 'image_path', type: 'mediumtext', nullable: true })
@@ -40,6 +40,17 @@ export class UserEntity extends BaseEntity {
 
   @Column({ name: 'birth_date', default: null })
   birthDate: Date;
+
+  @Column({
+    type: 'enum',
+    default: ROLE.STUDENT,
+    enum: ROLE,
+    name: 'role',
+  })
+  role: string;
+
+  @Column({ name: 'verify_email', type: 'boolean', default: false })
+  verifyEmail: boolean;
 
   @CreateDateColumn({ name: 'create_date' })
   createDate: Date;
