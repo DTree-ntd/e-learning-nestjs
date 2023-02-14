@@ -6,6 +6,7 @@ import { UserModule } from './api/user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ORMModule } from './core/database/orm.module';
+import { IORedisModule } from './core/redis/redis.module';
 import { HttpErrorFilter } from './utilities/http-error.filter';
 import { HttpTransformInterceptor } from './utilities/http-transform.interceptor';
 
@@ -15,6 +16,7 @@ import { HttpTransformInterceptor } from './utilities/http-transform.interceptor
     ScheduleModule.forRoot(),
     UserModule,
     ORMModule,
+    IORedisModule,
   ],
   controllers: [AppController],
   providers: [
@@ -23,10 +25,10 @@ import { HttpTransformInterceptor } from './utilities/http-transform.interceptor
       provide: APP_FILTER,
       useClass: HttpErrorFilter,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HttpTransformInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: HttpTransformInterceptor,
+    // },
   ],
 })
 export class AppModule {}
