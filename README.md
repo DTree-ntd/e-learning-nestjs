@@ -2,6 +2,10 @@
 
 ```bash
 $ npm install
+
+# generate document
+$ npm run compodoc
+
 ```
 
 ## Running the app

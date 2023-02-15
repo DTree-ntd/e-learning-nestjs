@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title></title>
+    <style>
+      .button {
+          text-align: center;
+          padding: 10px 20px;
+          font-size: 12px;
+
+          background: #A33AA3;
+          border-radius: 100px;
+          border: none;
+
+          color: #FFFFFF;
+          cursor: pointer;
+          text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Dear [{{name}}]</h2>
+
+    <p>Welcome to Young Minds. Please click below to verify your email</p>
+
+    <p>Click the button below to verify and activate your admin account:</p>
+
+    <a href="{{ url }}" target="_blank" class="button">Verify</a>
+
+    <p>Thank you for joining us.</p>
+
+    <p>Yours sincerely,</p>
+
+    <p>Young Minds Team</p>
+  </body>
+</html>

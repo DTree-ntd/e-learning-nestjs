@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/core/database/entities/user.entity';
-import { IORedisModule } from 'src/core/redis/redis.module';
+import { MailService } from 'src/utilities/services/mail/mail.service';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
@@ -20,7 +20,7 @@ import { UserService } from './user.service';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, MailService],
   exports: [UserService],
 })
 export class UserModule {}

@@ -7,6 +7,7 @@ import { UserEntity } from 'src/core/database/entities/user.entity';
 import { BaseError } from 'src/utilities/response/response-error';
 import { apiSuccess } from 'src/utilities/response/response-success';
 import { UserError } from 'src/utilities/response/user.response-error';
+import { MailService } from 'src/utilities/services/mail/mail.service';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RegistrationDto } from './dto/registration.dto';
 
@@ -19,6 +20,7 @@ export class UserService {
 
     private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async registration(params: RegistrationDto) {
@@ -43,14 +45,16 @@ export class UserService {
         username,
       };
 
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
-
       await this.redis.setex(
         `${newUser.id}_lastest_token_web`,
         parseInt(process.env.JWT_TTL),
         resData.token,
       );
+
+      await this.sendUserVerification(newUser);
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
 
       return apiSuccess(resData);
     } catch (error) {
@@ -106,7 +110,7 @@ export class UserService {
     return bcrypt.compare(password, passwordDb);
   }
 
-  async generateTokenUser(user) {
+  async generateTokenUser(user: UserEntity): Promise<string> {
     const payload = {
       userId: user.id,
       verifyEmail: user.verifyEmail,
@@ -114,5 +118,15 @@ export class UserService {
     };
 
     return this.jwtService.sign(payload);
+  }
+
+  async sendUserVerification(user: UserEntity) {
+    try {
+      await this.mailService.sendVerification(user.username, user.email);
+      return true;
+    } catch (error) {
+      Logger.error(error);
+      throw BaseError.INFO_NOT_AVAILABLE();
+    }
   }
 }

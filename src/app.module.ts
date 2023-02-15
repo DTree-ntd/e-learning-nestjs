@@ -9,6 +9,7 @@ import { ORMModule } from './core/database/orm.module';
 import { IORedisModule } from './core/redis/redis.module';
 import { HttpErrorFilter } from './utilities/http-error.filter';
 import { HttpTransformInterceptor } from './utilities/http-transform.interceptor';
+import { MailModule } from './utilities/services/mail/mail.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { HttpTransformInterceptor } from './utilities/http-transform.interceptor
     UserModule,
     ORMModule,
     IORedisModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [
