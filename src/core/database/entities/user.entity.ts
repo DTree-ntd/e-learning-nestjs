@@ -52,6 +52,9 @@ export class UserEntity extends BaseEntity {
   @Column({ name: 'verify_email', type: 'boolean', default: false })
   verifyEmail: boolean;
 
+  @Column({ name: 'enable_2FA', type: 'boolean', default: false })
+  enable2FA: boolean;
+
   @CreateDateColumn({ name: 'create_date' })
   createDate: Date;
 

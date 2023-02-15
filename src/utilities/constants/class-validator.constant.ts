@@ -7,6 +7,7 @@ export const ERR_MSG_MIN_LENGTH_PASSWORD =
   'The password need at least 8 characters . Please re-enter your password.';
 export const ERR_MSG_MAX_LENGTH_PASSWORD =
   'The password cannot enter the 17st character. Please re-enter your password.';
+export const ERR_MSG_MAX_LENGTH_ID = 'The id cannot longer than 36 character.';
 export const ERR_MSG_FORMAT_DATE = 'Not right format date YYYY-MM-DD.';
 
 export const requireFieldLength = (field: string, maxChar: string) => {

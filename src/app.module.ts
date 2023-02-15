@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './api/auth/auth.module';
 import { UserModule } from './api/user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -19,6 +20,7 @@ import { MailModule } from './utilities/services/mail/mail.module';
     ORMModule,
     IORedisModule,
     MailModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

@@ -4,9 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/core/database/entities/user.entity';
 import { MailService } from 'src/utilities/services/mail/mail.service';
-import { AuthService } from '../auth/auth.service';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Module({
   imports: [
@@ -20,8 +19,8 @@ import { UserService } from './user.service';
       inject: [ConfigService],
     }),
   ],
-  controllers: [UserController],
-  providers: [UserService, MailService, AuthService],
-  exports: [UserService],
+  controllers: [AuthController],
+  providers: [AuthService, MailService],
+  exports: [AuthService],
 })
-export class UserModule {}
+export class AuthModule {}

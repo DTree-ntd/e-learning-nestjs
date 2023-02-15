@@ -1,33 +1,27 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDate,
-  IsEmail,
-  IsNotEmpty,
-  Matches,
-  MaxDate,
   MaxLength,
+  IsEmail,
+  Matches,
   MinLength,
+  IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 import {
+  requireFieldLength,
+  REGEX_PASSWORD,
   ERR_MSG_FORMAT_PASSWORD,
   ERR_MSG_MAX_LENGTH_PASSWORD,
   ERR_MSG_MIN_LENGTH_PASSWORD,
-  REGEX_PASSWORD,
-  requireFieldLength,
   requireFieldNotEmpty,
+  ERR_MSG_MAX_LENGTH_ID,
 } from 'src/utilities/constants/class-validator.constant';
 
-export class RegistrationDto {
+export class LoginDto {
   @ApiProperty({ example: 'duc.nguyentrung@eastgate-software.com' })
   @MaxLength(320, { message: requireFieldLength('email', '320') })
   @IsEmail()
   email: string;
-
-  @ApiProperty({ example: 'ducNguyen' })
-  @MaxLength(20, { message: requireFieldLength('username', '20') })
-  @IsNotEmpty({ message: requireFieldNotEmpty('username') })
-  username: string;
 
   @ApiProperty({ example: 'Egs2023@' })
   @Matches(REGEX_PASSWORD, { message: ERR_MSG_FORMAT_PASSWORD })
@@ -36,10 +30,8 @@ export class RegistrationDto {
   @IsNotEmpty({ message: requireFieldNotEmpty('password') })
   password: string;
 
-  @ApiProperty({ example: '1996-06-30' })
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  @MaxDate(new Date())
-  @IsNotEmpty()
-  birthDate: Date;
+  @ApiPropertyOptional({ example: '51b1be47-87f6-4ac4-9db7-ea9763bc3612' })
+  @MaxLength(36, { message: ERR_MSG_MAX_LENGTH_ID })
+  @IsOptional()
+  invitationId: string;
 }

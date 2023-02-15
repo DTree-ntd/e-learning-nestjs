@@ -2,13 +2,14 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcryptjs';
 import { UserEntity } from 'src/core/database/entities/user.entity';
 import { BaseError } from 'src/utilities/response/response-error';
 import { apiSuccess } from 'src/utilities/response/response-success';
 import { UserError } from 'src/utilities/response/user.response-error';
 import { MailService } from 'src/utilities/services/mail/mail.service';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { AuthService } from '../auth/auth.service';
+import { LoginDto } from './dto/login.dto';
 import { RegistrationDto } from './dto/registration.dto';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
 
+    private readonly authService: AuthService,
     private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
@@ -66,14 +68,25 @@ export class UserService {
         case 4002:
           throw UserError.USERNAME_EXIST();
         default:
-          Logger.error(error);
+          Logger.error('Function registration', error);
+          throw BaseError.INFO_NOT_AVAILABLE();
+      }
+    }
+  }
+
+  async login(params: LoginDto) {
+    try {
+    } catch (error) {
+      switch (error) {
+        default:
+          Logger.error('Function login', error);
           throw BaseError.INFO_NOT_AVAILABLE();
       }
     }
   }
 
   async createUser(params: RegistrationDto, queryRunner: QueryRunner) {
-    const hashPassword = await this.hashPassword(params.password);
+    const hashPassword = await this.authService.hashPassword(params.password);
 
     const user = await this.userRepository.create({
       email: params.email,
@@ -99,17 +112,6 @@ export class UserService {
     return false;
   }
 
-  async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
-
-    return hashPassword;
-  }
-
-  comparePassword(password: string, passwordDb: string): Promise<boolean> {
-    return bcrypt.compare(password, passwordDb);
-  }
-
   async generateTokenUser(user: UserEntity): Promise<string> {
     const payload = {
       userId: user.id,
@@ -125,7 +127,7 @@ export class UserService {
       await this.mailService.sendVerification(user.username, user.email);
       return true;
     } catch (error) {
-      Logger.error(error);
+      Logger.error('Function sendUserVerification', error);
       throw BaseError.INFO_NOT_AVAILABLE();
     }
   }

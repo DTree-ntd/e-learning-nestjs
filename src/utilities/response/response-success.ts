@@ -1,4 +1,4 @@
-import { RESPONSE_SUCCESS } from 'src/core/database/constant/constant';
+import { RESPONSE_SUCCESS } from '../constants/constant';
 
 export const apiSuccess = (data: any) => {
   return {
