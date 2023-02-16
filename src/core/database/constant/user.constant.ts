@@ -9,4 +9,5 @@ export enum ROLE {
   ADMIN = 'ADMIN',
   TUTOR = 'TUTOR',
   STUDENT = 'STUDENT',
+  NONE = 'NONE',
 }

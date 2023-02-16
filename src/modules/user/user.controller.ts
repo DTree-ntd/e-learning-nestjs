@@ -1,5 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/utilities/guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegistrationDto } from './dto/registration.dto';
 import { UserService } from './user.service';
@@ -14,13 +22,15 @@ export class UserController {
     return this.userService.registration(params);
   }
 
-  @Post('verify-email')
-  async verifyEmail() {
-    return;
-  }
-
   @Post('login')
   async login(@Body() params: LoginDto) {
     return this.userService.login(params);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('role')
+  async setRole(@Body() params, @Request() req) {
+    return this.userService.setRole(req.user);
   }
 }

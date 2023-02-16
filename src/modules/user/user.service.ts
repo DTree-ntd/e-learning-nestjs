@@ -47,12 +47,6 @@ export class UserService {
         username,
       };
 
-      await this.redis.setex(
-        `${newUser.id}_lastest_token_web`,
-        parseInt(process.env.JWT_TTL),
-        resData.token,
-      );
-
       await this.sendUserVerification(newUser);
 
       await queryRunner.commitTransaction();
@@ -76,8 +70,36 @@ export class UserService {
 
   async login(params: LoginDto) {
     try {
+      const { email, password } = params;
+
+      const user = await this.getUserByEmail(email);
+
+      if (!user) {
+        throw 4003;
+      }
+
+      const isPasswordMatching = await this.authService.comparePassword(
+        password,
+        user.password,
+      );
+
+      if (!isPasswordMatching) {
+        throw 4004;
+      }
+
+      const resData = {
+        token: await this.generateTokenUser(user),
+        email,
+        username: user.username,
+      };
+
+      return apiSuccess(resData);
     } catch (error) {
       switch (error) {
+        case 4003:
+          throw UserError.EMAIL_NOT_EXIST();
+        case 4004:
+          throw UserError.PASSWORD_NOT_MATCH();
         default:
           Logger.error('Function login', error);
           throw BaseError.INFO_NOT_AVAILABLE();
@@ -100,6 +122,14 @@ export class UserService {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async getUserById(userId: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { id: userId } });
+  }
+
   async isExistUser(keyword: string): Promise<boolean> {
     const existUser = await this.userRepository.findOne({
       where: [{ email: `${keyword}` }, { username: `${keyword}` }],
@@ -116,6 +146,7 @@ export class UserService {
     const payload = {
       userId: user.id,
       verifyEmail: user.verifyEmail,
+      role: user.role,
       time: Date.now(),
     };
 
@@ -130,5 +161,9 @@ export class UserService {
       Logger.error('Function sendUserVerification', error);
       throw BaseError.INFO_NOT_AVAILABLE();
     }
+  }
+
+  async setRole(userId: string) {
+    return 'hi';
   }
 }
