@@ -18,4 +18,7 @@ export const UserError = {
 
   PASSWORD_NOT_MATCH: (msg = 'This password is not match. Please try again.') =>
     new HttpException(msg, 4004),
+
+  CAN_NOT_PROCESS: (msg = 'You can not process.') =>
+    new HttpException(msg, 4005),
 };

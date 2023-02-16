@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -27,6 +28,11 @@ export class HttpErrorFilter implements ExceptionFilter {
       case HttpException:
         status = HttpStatus.BAD_REQUEST;
         resultCode = (exception as HttpException).getStatus();
+        errorMessage = exception.message;
+        break;
+      case BadRequestException:
+        status = HttpStatus.BAD_REQUEST;
+        resultCode = (exception as BadRequestException).getStatus();
         errorMessage = exception.message;
         break;
       case QueryFailedError: // this is a TypeOrm error

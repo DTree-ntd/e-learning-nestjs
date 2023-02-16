@@ -47,7 +47,7 @@ export class UserEntity extends BaseEntity {
     enum: ROLE,
     name: 'role',
   })
-  role: string;
+  role: ROLE;
 
   @Column({ name: 'verify_email', type: 'boolean', default: false })
   verifyEmail: boolean;

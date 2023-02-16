@@ -2,6 +2,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ROLE } from 'src/core/database/constant/user.constant';
 import { UserEntity } from 'src/core/database/entities/user.entity';
 import { BaseError } from 'src/utilities/response/response-error';
 import { apiSuccess } from 'src/utilities/response/response-success';
@@ -11,6 +12,7 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegistrationDto } from './dto/registration.dto';
+import { SetRoleDto } from './dto/set-role.dto';
 
 @Injectable()
 export class UserService {
@@ -163,7 +165,29 @@ export class UserService {
     }
   }
 
-  async setRole(userId: string) {
-    return 'hi';
+  async setRole(params: SetRoleDto, userId: string) {
+    try {
+      const { role } = params;
+
+      const currentRole = await this.getUserRole(userId);
+
+      if (currentRole !== ROLE.NONE) {
+        throw 4005;
+      }
+
+      await this.userRepository.update({ id: userId }, { role });
+
+      return apiSuccess(null);
+    } catch (error) {
+      if (error === 4005) throw UserError.CAN_NOT_PROCESS();
+      Logger.error('Function setRole', error);
+      throw BaseError.INFO_NOT_AVAILABLE();
+    }
+  }
+
+  async getUserRole(userId: string) {
+    const user = await this.getUserById(userId);
+
+    return user.role;
   }
 }
