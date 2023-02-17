@@ -8,11 +8,10 @@ import { BaseError } from 'src/utilities/response/response-error';
 import { apiSuccess } from 'src/utilities/response/response-success';
 import { UserError } from 'src/utilities/response/user.response-error';
 import { MailService } from 'src/utilities/services/mail/mail.service';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
-import { AuthService } from '../auth/auth.service';
-import { LoginDto } from './dto/login.dto';
-import { RegistrationDto } from './dto/registration.dto';
+import { QueryRunner, Repository } from 'typeorm';
 import { SetRoleDto } from './dto/set-role.dto';
+import * as bcrypt from 'bcryptjs';
+import { RegistrationDto } from '../auth/dto/registration.dto';
 
 @Injectable()
 export class UserService {
@@ -21,96 +20,12 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
 
-    private readonly authService: AuthService,
-    private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
 
-  async registration(params: RegistrationDto) {
-    const { email, username } = params;
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      if (await this.isExistUser(email)) {
-        throw 4001;
-      }
-      if (await this.isExistUser(username)) {
-        throw 4002;
-      }
-
-      const newUser = await this.createUser(params, queryRunner);
-
-      const resData = {
-        token: await this.generateTokenUser(newUser),
-        email,
-        username,
-      };
-
-      await this.sendUserVerification(newUser);
-
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
-
-      return apiSuccess(resData);
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      switch (error) {
-        case 4001:
-          throw UserError.EMAIL_EXIST();
-        case 4002:
-          throw UserError.USERNAME_EXIST();
-        default:
-          Logger.error('Function registration', error);
-          throw BaseError.INFO_NOT_AVAILABLE();
-      }
-    }
-  }
-
-  async login(params: LoginDto) {
-    try {
-      const { email, password } = params;
-
-      const user = await this.getUserByEmail(email);
-
-      if (!user) {
-        throw 4003;
-      }
-
-      const isPasswordMatching = await this.authService.comparePassword(
-        password,
-        user.password,
-      );
-
-      if (!isPasswordMatching) {
-        throw 4004;
-      }
-
-      const resData = {
-        token: await this.generateTokenUser(user),
-        email,
-        username: user.username,
-      };
-
-      return apiSuccess(resData);
-    } catch (error) {
-      switch (error) {
-        case 4003:
-          throw UserError.EMAIL_NOT_EXIST();
-        case 4004:
-          throw UserError.PASSWORD_NOT_MATCH();
-        default:
-          Logger.error('Function login', error);
-          throw BaseError.INFO_NOT_AVAILABLE();
-      }
-    }
-  }
-
   async createUser(params: RegistrationDto, queryRunner: QueryRunner) {
-    const hashPassword = await this.authService.hashPassword(params.password);
+    const hashPassword = await this.hashPassword(params.password);
 
     const user = await this.userRepository.create({
       email: params.email,
@@ -124,12 +39,15 @@ export class UserService {
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { email } });
+  async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    return hashPassword;
   }
 
-  async getUserById(userId: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { id: userId } });
+  comparePassword(password: string, passwordDb: string): Promise<boolean> {
+    return bcrypt.compare(password, passwordDb);
   }
 
   async isExistUser(keyword: string): Promise<boolean> {
@@ -144,7 +62,7 @@ export class UserService {
     return false;
   }
 
-  async generateTokenUser(user: UserEntity): Promise<string> {
+  async generateTokenUser(user: UserEntity) {
     const payload = {
       userId: user.id,
       verifyEmail: user.verifyEmail,
@@ -152,7 +70,23 @@ export class UserService {
       time: Date.now(),
     };
 
-    return this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: `${process.env.JWT_REFRESH_EXPIRATION_TIME}s`,
+    });
+
+    await this.userRepository.update({ id: user.id }, { refreshToken });
+
+    return { accessToken, refreshToken };
+  }
+
+  async getUserByEmail(email: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async getUserById(userId: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { id: userId } });
   }
 
   async sendUserVerification(user: UserEntity) {

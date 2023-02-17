@@ -55,6 +55,14 @@ export class UserEntity extends BaseEntity {
   @Column({ name: 'enable_2FA', type: 'boolean', default: false })
   enable2FA: boolean;
 
+  @Column({
+    name: 'refresh_token',
+    length: 320,
+    type: 'varchar',
+    nullable: true,
+  })
+  refreshToken: string;
+
   @CreateDateColumn({ name: 'create_date' })
   createDate: Date;
 
