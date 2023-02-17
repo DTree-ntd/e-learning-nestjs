@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Catch,
   ExceptionFilter,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Logger,
@@ -32,7 +33,12 @@ export class HttpErrorFilter implements ExceptionFilter {
         break;
       case BadRequestException:
         status = HttpStatus.BAD_REQUEST;
-        resultCode = (exception as BadRequestException).getStatus();
+        resultCode = exception.getStatus();
+        errorMessage = exception.message;
+        break;
+      case ForbiddenException:
+        status = HttpStatus.BAD_REQUEST;
+        resultCode = exception.getStatus();
         errorMessage = exception.message;
         break;
       case QueryFailedError: // this is a TypeOrm error
