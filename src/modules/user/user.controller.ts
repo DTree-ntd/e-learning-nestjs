@@ -6,7 +6,10 @@ import {
   UseGuards,
   Request,
   Patch,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ROLE } from 'src/core/database/constant/user.constant';
 import { JwtAuthGuard } from 'src/utilities/guards/jwt-auth.guard';
@@ -24,6 +27,14 @@ export class UserController {
   @Patch('role')
   async setRole(@Body() params: SetRoleDto, @Request() req) {
     return this.userService.setRole(params, req.user.userId);
+  }
+
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch('user/image')
+  async updateImage(@UploadedFile() file, @Request() req) {
+    return this.userService.updateUserImage(file, req.user.userId);
   }
 
   @UseGuards(RoleGuard(ROLE.ADMIN))

@@ -12,6 +12,7 @@ import { QueryRunner, Repository } from 'typeorm';
 import { SetRoleDto } from './dto/set-role.dto';
 import * as bcrypt from 'bcryptjs';
 import { RegistrationDto } from '../auth/dto/registration.dto';
+import { S3Service } from 'src/utilities/services/aws/s3.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
 
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async createUser(params: RegistrationDto, queryRunner: QueryRunner) {
@@ -123,5 +125,18 @@ export class UserService {
     const user = await this.getUserById(userId);
 
     return user.role;
+  }
+
+  async updateUserImage(file, userId: string) {
+    try {
+      const key = await this.s3Service.upload(file, userId);
+
+      await this.userRepository.update({ id: userId }, { imagePath: key });
+
+      return this.s3Service.getLinkMediaKey(key);
+    } catch (error) {
+      Logger.error('Function setRole', error);
+      throw BaseError.INFO_NOT_AVAILABLE();
+    }
   }
 }
