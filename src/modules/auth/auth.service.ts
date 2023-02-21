@@ -28,19 +28,18 @@ export class AuthService {
         throw 4002;
       }
 
-      console.time();
       const newUser = await this.userService.createUser(params, queryRunner);
-      console.timeEnd();
-      const resData = {
-        token: await this.userService.generateTokenUser(newUser),
-        email,
-        username,
-      };
 
       await this.userService.sendUserVerification(newUser);
 
       await queryRunner.commitTransaction();
       await queryRunner.release();
+
+      const resData = {
+        token: await this.userService.generateTokenUser(newUser),
+        email,
+        username,
+      };
 
       return apiSuccess(resData);
     } catch (error) {
