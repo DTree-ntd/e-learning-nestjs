@@ -14,7 +14,7 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  async registration(params: RegistrationDto) {
+  async register(params: RegistrationDto) {
     const { email, username } = params;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

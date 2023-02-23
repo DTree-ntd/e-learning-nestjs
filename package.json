@@ -21,6 +21,7 @@
     "compodoc": "npx @compodoc/compodoc -p tsconfig.json -s"
   },
   "dependencies": {
+    "@nestjs-cognito/auth": "^1.0.2",
     "@nestjs-modules/ioredis": "^1.0.1",
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/axios": "^2.0.0",

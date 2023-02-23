@@ -4,6 +4,7 @@ import { S3 } from 'aws-sdk';
 
 @Injectable()
 export class S3Service {
+  private readonly s3;
   private readonly region;
   private readonly accessKeyId;
   private readonly secretAccessKey;
@@ -14,11 +15,16 @@ export class S3Service {
     this.accessKeyId = this.configService.get('AWS_ACCESS_KEY_ID');
     this.secretAccessKey = this.configService.get('AWS_SECRET_ACCESS_KEY');
     this.publicBucketName = this.configService.get('AWS_PUBLIC_BUCKET_NAME');
+
+    this.s3 = new S3({
+      region: this.region,
+      accessKeyId: this.accessKeyId,
+      secretAccessKey: this.secretAccessKey,
+    });
   }
 
   getLinkMediaKey(key: string) {
-    const s3 = this.getS3();
-    return s3.getSignedUrl('getObject', {
+    return this.s3.getSignedUrl('getObject', {
       Key: key,
       Bucket: this.publicBucketName,
       Expires: 60 * 60,
@@ -26,8 +32,7 @@ export class S3Service {
   }
 
   async updateACL(key: string) {
-    const s3 = this.getS3();
-    s3.putObjectAcl(
+    this.s3.putObjectAcl(
       {
         Bucket: this.publicBucketName,
         Key: key,
@@ -37,11 +42,11 @@ export class S3Service {
       (err, data) => {},
     );
     return (
-      s3.endpoint.protocol +
+      this.s3.endpoint.protocol +
       '//' +
       this.publicBucketName +
       '.' +
-      s3.endpoint.hostname +
+      this.s3.endpoint.hostname +
       '/' +
       key
     );
@@ -59,18 +64,16 @@ export class S3Service {
   }
 
   async deleteFileS3(key: string) {
-    const s3 = this.getS3();
     const params = {
       Bucket: this.publicBucketName,
       Key: key,
     };
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    s3.deleteObject(params, (err, data) => {});
+    this.s3.deleteObject(params, (err, data) => {});
     return true;
   }
 
   private async uploadS3(file_buffer, key, content_type) {
-    const s3 = this.getS3();
     const params = {
       Bucket: this.publicBucketName,
       Key: key,
@@ -79,20 +82,12 @@ export class S3Service {
       // ACL: 'public-read', // comment if private file
     };
     return new Promise((resolve, reject) => {
-      s3.upload(params, (err, data) => {
+      this.s3.upload(params, (err, data) => {
         if (err) {
           reject(err.message);
         }
         resolve(data);
       });
-    });
-  }
-
-  private getS3() {
-    return new S3({
-      region: this.region,
-      accessKeyId: this.accessKeyId,
-      secretAccessKey: this.secretAccessKey,
     });
   }
 
